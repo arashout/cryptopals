@@ -3,6 +3,8 @@ import collections
 from typing import List, Tuple, Dict
 from utils import xor, xor_hex, ass, hex_to_base64
 from scoring import messages_with_scores, build_english_frequency
+from encryption import repeating_xor 
+import binascii
 
 if __name__ == "__main__":
     s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
@@ -28,5 +30,14 @@ if __name__ == "__main__":
         hex_messages = f.readlines()
     ms = messages_with_scores(hex_messages, english_freq_doc)
     print("output S1C4", ms[0])
-    
+
+    s1c5in = """Burning 'em, if you ain't quick and nimble
+I go crazy when I hear a cymbal"""
+    key = "ICE"
+    a = bytes(s1c5in, "utf-8")
+    b = bytes(key, "utf-8")
+    # Convert each byte from byte array to hex str
+    res = binascii.hexlify(repeating_xor(a,b))
+    ass("""0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f""", res.decode('utf-8'), "")
+    print("output S1C5", res)
 
