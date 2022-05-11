@@ -26,26 +26,32 @@ def xor(one: bytes, two: bytes) -> bytes:
 def xor_single_char(message: bytes, key: int) -> bytes:
     return bytes(a ^ key for a in message) 
 
-def good_message(msg: str, counter: Dict[str, int]) -> bool:
-    bad_chars = [chr(i) for i in range(32)] # The first 32 are weird characters
-    most_common = [x[0] for x in counter.most_common(10)]
+def score_message(msg: str, scoring_dict: dict) -> float:
+    counter = collections.Counter()
+    for c in msg:
+        counter[c.lower()] += 1
+    msg_counter = normalize_counter(counter) 
+    all_keys = set().union(msg_counter.keys(), scoring_dict.keys())
 
-    for bc in bad_chars:
-        if bc in most_common:
-            return False
+    similarity = 0
+    for k in all_keys:
+        similarity += msg_counter[k] * scoring_dict[k]
 
-    return True
+    return similarity
 
-# TODO: Need a better way to score decoded messages
-# According to Google I should use English Letter frequency
-def possible_candidates(decoded_messages: List[str]) -> List[Tuple[str, Dict[str, int]]]:
-    res = []
-    for msg in decoded_messages:
-        counter = collections.Counter(msg)
-        if good_message(msg, counter):
-            res.append((msg, counter.most_common(10)))
+def normalize_counter(x: Dict[str, int]) -> Dict[str, float]:
+    total = sum(x.values(), 0.0)
+    y = x.copy()
+    for key in x:
+        y[key] /= total
+    return y
 
-    return res
+def build_english_frequency(doc: str) -> dict:
+    counter = collections.Counter()
+    for c in doc:
+        counter[c.lower()] += 1
+    return normalize_counter(counter)
+
 
 
 if __name__ == "__main__":
@@ -55,18 +61,28 @@ if __name__ == "__main__":
     
     a = bytes.fromhex("1c0111001f010100061a024b53535009181c")
     b = bytes.fromhex("686974207468652062756c6c277320657965")
-    print(a.decode('ascii'), b.decode())
+    print('inputs to S1C2', a.decode('ascii'), b.decode())
     ass("746865206b696420646f6e277420706c6179", xor(a, b).hex() , "S1C2")
-    ass("0x746865206b696420646f6e277420706c6179", xor_hex("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965") , "S1C2_kris")
+    res = xor_hex("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965") 
+    ass("0x746865206b696420646f6e277420706c6179", res, "S1C2_kris")
+    print('output S1C2', "hex:", res, "string:", bytes.fromhex(res[2:]) )
+
+    print("Building English frequency map")
+    with open('hamlet.txt', 'r') as f:
+        doc = f.read()
+        english_freq_doc = build_english_frequency(doc)
+        print(english_freq_doc)
 
     hs = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
     decoded_messages = []
-    for i in range(256):
+    for i in range(256): # 1 byte
         b = xor_single_char(bytes.fromhex(hs), i)
         try:
-            decoded_messages.append(b.decode())
+            msg = b.decode()
+            decoded_messages.append( (msg, score_message(msg, english_freq_doc ) ) )
         except Exception as e:
-            pass
-    for pc in possible_candidates(decoded_messages):
-        print(pc)
-
+           pass
+    
+    decoded_messages.sort(key=lambda x: x[1], reverse=True)
+    for dm in decoded_messages[:10]:
+        print(dm)
