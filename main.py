@@ -71,7 +71,6 @@ if __name__ == "__main__":
     with open('hamlet.txt', 'r') as f:
         doc = f.read()
         english_freq_doc = build_english_frequency(doc)
-        print(english_freq_doc)
 
     hs = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
     decoded_messages = []
