@@ -1,6 +1,7 @@
 from typing import List, Dict, Tuple
 from utils import xor_single_char
 import collections
+from utils import ass
 
 def score_message(msg: str, scoring_dict: dict) -> float:
     counter = collections.Counter()
@@ -41,4 +42,13 @@ def messages_with_scores(hex_messages: List[str], english_freq_doc: Dict[str, fl
     decoded_messages.sort(key=lambda x: x[1], reverse=True)
     return decoded_messages
 
+def hamming_distance(a: bytes, b: bytes) -> int:
+    # Drop the 0b
+    ab = bin(int.from_bytes(a, 'big'))[2:]
+    bb = bin(int.from_bytes(b, 'big'))[2:]
+    total_diff = abs(len(ab) - len(bb))
+    for i in range(min(len(ab), len(bb))):
+        total_diff += int(ab[i]) ^ int(bb[i])
+    return total_diff
 
+ass(37, hamming_distance('this is a test'.encode(),'wokka wokka!!!'.encode()), 'hamming distance function is wrong')
