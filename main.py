@@ -44,3 +44,10 @@ I go crazy when I hear a cymbal"""
     )
     print("output S1C5", res)
 
+    with open('6.txt', 'r') as f:
+        s1c6in = f.read()
+
+    s1c6in_b = base64.b64decode(s1c6in)
+    for ks in range(2, 41):
+        pass
+
