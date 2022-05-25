@@ -3,7 +3,8 @@ import collections
 from typing import List, Tuple, Dict
 from utils import xor, xor_hex, ass, hex_to_base64
 from scoring import messages_with_scores, build_english_frequency
-from encryption import repeating_xor 
+from encryption import repeating_xor
+from breaking import normalized_edit_distance, into_chunks
 
 if __name__ == "__main__":
     s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
@@ -48,6 +49,15 @@ I go crazy when I hear a cymbal"""
         s1c6in = f.read()
 
     s1c6in_b = base64.b64decode(s1c6in)
-    for ks in range(2, 41):
+    best_key_sizes = []
+    for ks in range(2, 40):
+        chunks = into_chunks(s1c6in_b, ks)
+        best_key_sizes.append( (ks, normalized_edit_distance(chunks, ks)) )
+    best_key_sizes.sort(key=lambda x:x[1])
+    best_key_sizes = best_key_sizes[:3]
+
+    print("best_key_sizes:", best_key_sizes)
+    for ks in best_key_sizes:
         pass
+        
 
